@@ -1,3 +1,21 @@
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+# --- Hugging Face 必备的保活服务 ---
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is running!")
+
+def run_health_server():
+    # 必须监听 7860 端口
+    server = HTTPServer(('0.0.0.0', 7860), HealthCheckHandler)
+    server.serve_forever()
+
+# 在后台启动网页服务，确保不影响机器人逻辑
+threading.Thread(target=run_health_server, daemon=True).start()
+# -------------------------------
 import os,sys,time,platform
 from dotenv import load_dotenv
 load_dotenv()
